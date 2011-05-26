@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Spike</title>
+</head>
+<body>
+<p><input type="text" id="send"/></p>
+
+<p>
+  <a href="#connect" id="connect">connect</a> |
+  <a href="#disconnect" id="disconnect">disconnect</a>
+</p>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+<script src="http://localhost:8081/socket.io/socket.io.js"></script>
+
+<script type='text/javascript'>
+   function log(prefix, message) {
+     if(!message) { message = ""; }
+     var data = "<p>["+prefix+ " " +(new Date()).getTime()+ "] " + message + "</p>";
+     
+     $(data).insertBefore($("#send"));
+   }
+   $(function(){
+     var socket = new io.Socket('localhost', {port: 8081});
+     socket.on('connect', function() { log("Connect"); });
+
+     socket.on('message', function(data) { log("<-", data); });
+
+     socket.on('disconnect', function() { log("Disconnect"); });
+
+     $("#connect").click(function(){
+       socket.connect();
+       false;
+     });
+
+     $("#disconnect").click(function(){
+       socket.disconnect();
+       false;
+     });
+
+     $("#send").keypress(function(e) {
+       if (e.keyCode != "13") return;
+       
+       var data = $(this).val();
+       
+       log("->", data);
+       socket.send(data);
+       
+       $(this).val("");
+     });
+     
+     window.socket = socket;
+   });
+</script>
+</body>
+</html>
