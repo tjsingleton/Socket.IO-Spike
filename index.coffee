@@ -27,7 +27,9 @@ socket.on 'connection', (client) ->
 
   client.on 'message', (message) ->
     console.log "Enqueueing: #{message}"
-    resque.enqueue "message", "ReceiveMessageJob", client.sessionId, message
+    # resque.enqueue "message", "ReceiveMessageJob", client.sessionId, message
+    # resqueConnection.rpush("resque:MESSAGE", JSON.stringify([client.sessionId, message]))
+    resqueConnection.rpush("OUT", JSON.stringify([client.sessionId, message]))
 
 listen = ->
   listenerConnection.blpop "resque:MESSAGE", 0, (err, reply) ->

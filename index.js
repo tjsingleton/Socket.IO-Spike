@@ -23,7 +23,7 @@
     clients[client.sessionId] = client;
     return client.on('message', function(message) {
       console.log("Enqueueing: " + message);
-      return resque.enqueue("message", "ReceiveMessageJob", client.sessionId, message);
+      return resqueConnection.rpush("OUT", JSON.stringify([client.sessionId, message]));
     });
   });
   listen = function() {
