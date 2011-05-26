@@ -4,13 +4,10 @@ io   = require 'socket.io'
 Redis  = require "redis"
 Resque = require "resque"
 
-PATTERN = "*"
+listenerConnection = Redis.createClient()
+resqueConnection = Redis.createClient()
 
-
-pubsub_connection = Redis.createClient()
-resque_connection = Redis.createClient()
-
-resque = Resque.connect({ redis: resque_connection })
+resque = Resque.connect({ redis: resqueConnection })
 
 
 httpResponse = (req, res) ->
@@ -25,19 +22,23 @@ socket = io.listen server
 
 clients = {}
 
-socket.on 'connection', (client) -> 
+socket.on 'connection', (client) ->
   clients[client.sessionId] = client
 
   client.on 'message', (message) ->
     console.log "Enqueueing: #{message}"
     resque.enqueue "message", "ReceiveMessageJob", client.sessionId, message
 
-pubsub_connection.on "pmessage", (pattern, channel, message) ->
-  console.log "Sending: #{message}"
-  [prefix, id] = channel.split ":"
+listen = ->
+  listenerConnection.blpop "resque:MESSAGE", 0, (err, reply) ->
+    [key, jsonMessage] = reply
+    [id, message] = JSON.parse(jsonMessage)
 
-  client = clients[id]
-  client.send(message) if client
+    console.log "Sending: #{message}"
 
-pubsub_connection.psubscribe PATTERN
+    client = clients[id]
+    client.send(message) if client
 
+    process.nextTick listen
+
+listen()

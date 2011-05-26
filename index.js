@@ -1,14 +1,13 @@
 (function() {
-  var PATTERN, Redis, Resque, clients, http, httpResponse, io, pubsub_connection, resque, resque_connection, server, socket;
+  var Redis, Resque, clients, http, httpResponse, io, listen, listenerConnection, resque, resqueConnection, server, socket;
   http = require('http');
   io = require('socket.io');
   Redis = require("redis");
   Resque = require("resque");
-  PATTERN = "*";
-  pubsub_connection = Redis.createClient();
-  resque_connection = Redis.createClient();
+  listenerConnection = Redis.createClient();
+  resqueConnection = Redis.createClient();
   resque = Resque.connect({
-    redis: resque_connection
+    redis: resqueConnection
   });
   httpResponse = function(req, res) {
     res.writeHead(200, {
@@ -27,14 +26,18 @@
       return resque.enqueue("message", "ReceiveMessageJob", client.sessionId, message);
     });
   });
-  pubsub_connection.on("pmessage", function(pattern, channel, message) {
-    var client, id, prefix, _ref;
-    console.log("Sending: " + message);
-    _ref = channel.split(":"), prefix = _ref[0], id = _ref[1];
-    client = clients[id];
-    if (client) {
-      return client.send(message);
-    }
-  });
-  pubsub_connection.psubscribe(PATTERN);
+  listen = function() {
+    return listenerConnection.blpop("resque:MESSAGE", 0, function(err, reply) {
+      var client, id, jsonMessage, key, message, _ref;
+      key = reply[0], jsonMessage = reply[1];
+      _ref = JSON.parse(jsonMessage), id = _ref[0], message = _ref[1];
+      console.log("Sending: " + message);
+      client = clients[id];
+      if (client) {
+        client.send(message);
+      }
+      return process.nextTick(listen);
+    });
+  };
+  listen();
 }).call(this);
