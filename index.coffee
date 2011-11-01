@@ -1,46 +1,27 @@
+fs   = require 'fs'
 http = require 'http'
-io   = require 'socket.io'
-
-Redis  = require "redis"
-Resque = require "resque"
-
-listenerConnection = Redis.createClient()
-resqueConnection = Redis.createClient()
-
-resque = Resque.connect({ redis: resqueConnection })
-
+socket_io   = require 'socket.io'
+util = require "util"
 
 httpResponse = (req, res) ->
- res.writeHead 200, 'Content-Type': 'text/html'
- res.end '<h1>Hello world</h1>'
+  fs.readFile './index.html', (error, file) ->
+    res.writeHead 200, 'Content-Type': 'text/html'
+    res.end file
 
 server = http.createServer httpResponse
-server.listen 8081
+server.listen 8082
 
-socket = io.listen server
+log = (message...) ->
+  console.log "[ECHO]", message
 
 
-clients = {}
-
-socket.on 'connection', (client) ->
-  clients[client.sessionId] = client
+io = socket_io.listen server
+io.sockets.on 'connection', (client) ->
+  log("id: #{client.id}; connection;")
 
   client.on 'message', (message) ->
-    console.log "Enqueueing: #{message}"
-    # resque.enqueue "message", "ReceiveMessageJob", client.sessionId, message
-    # resqueConnection.rpush("resque:MESSAGE", JSON.stringify([client.sessionId, message]))
-    resqueConnection.rpush("OUT", JSON.stringify([client.sessionId, message]))
+    log("id: #{client.id}; message: #{message};")
+    client.send(message.toUpperCase());
 
-listen = ->
-  listenerConnection.blpop "resque:MESSAGE", 0, (err, reply) ->
-    [key, jsonMessage] = reply
-    [id, message] = JSON.parse(jsonMessage)
-
-    console.log "Sending: #{message}"
-
-    client = clients[id]
-    client.send(message) if client
-
-    process.nextTick listen
-
-listen()
+  client.on 'disconnect', ->
+    log("id: #{client.id}; disconnection;")
