@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Spike</title>
+</head>
+<body>
+<p><input type="text" id="send"/></p>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<script src="http://localhost:8083/faye.js"></script>
+
+<script type='text/javascript'>
+   function log(prefix, message) {
+     if(!message) { message = ""; }
+     var data = "<p>["+prefix+ " " +(new Date()).getTime()+ "] " + message + "</p>";
+
+     $(data).insertBefore($("#send"));
+   }
+
+   $(function(){
+     window.client = new Faye.Client('http://localhost:8083/faye');
+
+//     socket.on('connect', function() { log("Connect"); });
+//     socket.on('disconnect', function() { log("Disconnect"); });
+
+     client.addExtension({
+       incoming: function(message, callback) {
+         console.log(message);
+
+         switch (message.channel) {
+           case '/meta/connect':
+            log("Connect");
+            break;
+         }
+
+         callback(message);
+       }
+     });
+
+     client.subscribe('/message', function(data) { log("<-", data); });
+
+
+     var send = $("#send");
+     send.keypress(function(e) {
+       if (e.keyCode != "13") { return; }
+
+       var data = send.val();
+       send.val("");
+
+       log("->", data);
+       client.publish('/message', data);
+     });
+   });
+</script>
+</body>
+</html>
