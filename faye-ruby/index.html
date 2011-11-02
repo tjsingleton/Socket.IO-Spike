@@ -2,56 +2,65 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Spike</title>
+  <title>Faye Ruby</title>
 </head>
 <body>
+<pre id="stdout"></pre>
 <p><input type="text" id="send"/></p>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 <script src="http://localhost:9292/faye.js"></script>
 
 <script type='text/javascript'>
-   function log(prefix, message) {
-     if(!message) { message = ""; }
-     var data = "<p>["+prefix+ " " +(new Date()).getTime()+ "] " + message + "</p>";
+  $(function(){
+    var stdout  = $("#stdout");
+    var send    = $("#send");
 
-     $(data).insertBefore($("#send"));
-   }
+    function log(prefix, message) {
+      var now = (new Date()).getTime()
+        , data = "" + now + "; " + prefix
+        ;
 
-   $(function(){
-     window.client = new Faye.Client('http://localhost:9292/faye');
+      if (message) { data += ": " + message; }
 
-//     socket.on('connect', function() { log("Connect"); });
-//     socket.on('disconnect', function() { log("Disconnect"); });
+      stdout.append(data + "\n");
+    }
 
-     client.addExtension({
-       incoming: function(message, callback) {
-         console.log(message);
+    function connected () {
+      log("Connect");
+    }
 
-         switch (message.channel) {
-           case '/meta/handshake':
-            log("Connect");
-            break;
-         }
+    function gets(data) {
+      log("IN", data);
+    }
 
-         callback(message);
+    send.keypress(function(e) {
+      if (e.keyCode != "13") { return; }
+
+      var data = send.val();
+      send.val("");
+
+      log("OUT", data);
+      puts(data);
+    });
+
+    window.client = new Faye.Client('http://localhost:9292/faye');
+
+    client.addExtension({
+     incoming: function(message, callback) {
+       if (message["channel"] === '/meta/connect') {
+         connected();
        }
-     });
 
-     client.subscribe('/message', function(data) { log("<-", data); });
+       callback(message);
+     }
+    });
+    client.subscribe('/message', gets);
 
-
-     var send = $("#send");
-     send.keypress(function(e) {
-       if (e.keyCode != "13") { return; }
-
-       var data = send.val();
-       send.val("");
-
-       log("->", data);
-       client.publish('/message', data);
-     });
-   });
+    function puts(data) {
+      client.publish('/message', data);
+    }
+  });
 </script>
 </body>
 </html>

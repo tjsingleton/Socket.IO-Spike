@@ -2,39 +2,57 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Spike</title>
+  <title>Socket.IO</title>
 </head>
 <body>
+
+<pre id="stdout"></pre>
 <p><input type="text" id="send"/></p>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 <script src="http://localhost:8082/socket.io/socket.io.js"></script>
 
 <script type='text/javascript'>
-   function log(prefix, message) {
-     if(!message) { message = ""; }
-     var data = "<p>["+prefix+ " " +(new Date()).getTime()+ "] " + message + "</p>";
-
-     $(data).insertBefore($("#send"));
-   }
-
    $(function(){
-     window.socket = new io.connect('localhost', {port: 8082});
+     var stdout  = $("#stdout");
+     var send    = $("#send");
 
-     socket.on('connect', function() { log("Connect"); });
-     socket.on('message', function(data) { log("<-", data); });
-     socket.on('disconnect', function() { log("Disconnect"); });
+     function log(prefix, message) {
+       var now = (new Date()).getTime()
+         , data = "" + now + "; " + prefix
+         ;
 
-     var send = $("#send");
+       if (message) { data += ": " + message; }
+
+       stdout.append(data + "\n");
+     }
+
+     function connected () {
+       log("Connect");
+     }
+
+     function gets(data) {
+       log("IN", data);
+     }
+
      send.keypress(function(e) {
        if (e.keyCode != "13") { return; }
 
        var data = send.val();
        send.val("");
 
-       log("->", data);
-       socket.send(data);
+       log("OUT", data);
+       puts(data);
      });
+
+
+     window.socket = new io.connect('localhost', {port: 8082});
+     socket.on('connect', connected);
+     socket.on('message', gets);
+
+     function puts(data) {
+       socket.send(data);
+     }
    });
 </script>
 </body>

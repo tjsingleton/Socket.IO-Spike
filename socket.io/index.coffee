@@ -1,7 +1,6 @@
-fs   = require 'fs'
-http = require 'http'
-socket_io   = require 'socket.io'
-util = require "util"
+fs        = require 'fs'
+http      = require 'http'
+socket_io = require 'socket.io'
 
 httpResponse = (req, res) ->
   fs.readFile './index.html', (error, file) ->
@@ -11,9 +10,7 @@ httpResponse = (req, res) ->
 server = http.createServer httpResponse
 server.listen 8082
 
-log = (message...) ->
-  console.log "[ECHO]", message
-
+log = (message...) -> console.log "[ECHO]", message
 
 io = socket_io.listen server
 io.sockets.on 'connection', (client) ->
@@ -23,5 +20,4 @@ io.sockets.on 'connection', (client) ->
     log("id: #{client.id}; message: #{message};")
     client.send(message.toUpperCase());
 
-  client.on 'disconnect', ->
-    log("id: #{client.id}; disconnection;")
+  client.on 'disconnect', -> log("id: #{client.id}; disconnection;")
