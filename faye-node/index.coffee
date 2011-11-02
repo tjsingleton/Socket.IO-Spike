@@ -20,7 +20,7 @@ server.listen 8083
 bayeux.addExtension(
       incoming: (message, callback) ->
         switch message.channel
-          when '/meta/connect' then log("id: #{message.clientId}; connection;")
+          when '/meta/handshake' then log("id: #{message.clientId}; connection;")
           when '/message/disconnect' then log("id: #{message.clientId}; disconnection;")
           when '/message'
             log("id: #{message.clientId}; message: #{message.data};")
