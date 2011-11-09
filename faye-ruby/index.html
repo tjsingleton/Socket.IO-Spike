@@ -9,7 +9,7 @@
 <p><input type="text" id="send"/></p>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-<script src="http://localhost:9292/faye.js"></script>
+<script src="http://echo-staging.crunchconnect.com:9292/faye.js"></script>
 
 <script type='text/javascript'>
   $(function(){
@@ -44,7 +44,7 @@
       puts(data);
     });
 
-    window.client = new Faye.Client('http://localhost:9292/faye');
+    window.client = new Faye.Client('http://echo-staging.crunchconnect.com:9292/faye');
 
     client.addExtension({
      incoming: function(message, callback) {
