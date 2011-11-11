@@ -42,8 +42,29 @@ namespace :fayeruby do
 end
 
 namespace :all do
+  NAMES = ["fayenode", "fayeruby", "socketio:0.8.6", "socketio:0.8.7"].
+
   desc "build all tests"
   task :build => ["socketio:build", "fayenode:build", "fayeruby:build"] do
     system "npm install coffee-script"
+  end
+
+  desc "start all" 
+  task :start do
+    NAMES.each do |name|
+      %x[
+        nohup rake #{name}:start > log/#{name}.log;
+        echo $! > tmp/pids/#{name}
+      ]
+    end
+  end
+
+  desc "stop all"
+  task :stop do
+    NAMES.each do |name|
+      %x[
+        kill `cat tmp/pids/#{name}` 
+      ]
+    end
   end
 end
