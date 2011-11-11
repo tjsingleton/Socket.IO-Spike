@@ -7,12 +7,18 @@ namespace :socketio do
     system "cd socket.io-0.8.7; npm install socket.io@0.8.7"
   end
 
+end
+
+namespace "socketio:0.8.6" do
   desc "start socket-io test"
-  task 'start:0.8.6' do
+  task 'start' do
     system "cd socket.io-0.8.6; #{COFFEE} index.coffee"
   end
+end
 
-  task 'start:0.8.7' do
+namespace "socketio:0.8.7" do
+  desc "start socket-io test"
+  task 'start' do
     system "cd socket.io-0.8.7; #{COFFEE} index.coffee"
   end
 end
@@ -42,7 +48,7 @@ namespace :fayeruby do
 end
 
 namespace :all do
-  NAMES = ["fayenode", "fayeruby", "socketio:0.8.6", "socketio:0.8.7"].
+  NSPACES = ["fayenode", "fayeruby", "socketio:0.8.6", "socketio:0.8.7"].
 
   desc "build all tests"
   task :build => ["socketio:build", "fayenode:build", "fayeruby:build"] do
@@ -51,7 +57,7 @@ namespace :all do
 
   desc "start all" 
   task :start do
-    NAMES.each do |name|
+    NSPACES.each do |name|
       %x[
         nohup rake #{name}:start > log/#{name}.log;
         echo $! > tmp/pids/#{name}
@@ -61,7 +67,7 @@ namespace :all do
 
   desc "stop all"
   task :stop do
-    NAMES.each do |name|
+    NSPACES.each do |name|
       %x[
         kill `cat tmp/pids/#{name}` 
       ]
