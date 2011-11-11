@@ -8,7 +8,7 @@ httpResponse = (req, res) ->
     res.end file
 
 server = http.createServer httpResponse
-server.listen 8082
+server.listen 8084
 
 log = (message...) -> console.log "[ECHO]", message
 
@@ -18,6 +18,6 @@ io.sockets.on 'connection', (client) ->
 
   client.on 'message', (message) ->
     log("id: #{client.id}; message: #{message};")
-    client.send(message.toUpperCase());
+    client.send(message.toUpperCase())
 
   client.on 'disconnect', -> log("id: #{client.id}; disconnection;")

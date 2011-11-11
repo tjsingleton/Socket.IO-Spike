@@ -3,12 +3,17 @@ COFFEE = "../node_modules/coffee-script/bin/coffee"
 namespace :socketio do
   desc "build socket-io test"
   task :build do
-    system "cd socket.io; npm install socket.io"
+    system "cd socket.io-0.8.6; npm install socket.io@0.8.6"
+    system "cd socket.io-0.8.7; npm install socket.io@0.8.7"
   end
 
   desc "start socket-io test"
-  task :start do
-    system "cd socket.io; #{COFFEE} index.coffee"
+  task 'start:0.8.6' do
+    system "cd socket.io-0.8.6; #{COFFEE} index.coffee"
+  end
+
+  task 'start:0.8.7' do
+    system "cd socket.io-0.8.7; #{COFFEE} index.coffee"
   end
 end
 
