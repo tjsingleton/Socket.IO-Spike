@@ -1,76 +1,51 @@
 COFFEE = "../node_modules/coffee-script/bin/coffee"
 
-namespace :socketio do
+namespace :build do
   desc "build socket-io test"
-  task :build do
+  task :socketio do
     system "cd socket.io-0.8.6; npm install socket.io@0.8.6"
     system "cd socket.io-0.8.7; npm install socket.io@0.8.7"
   end
 
-end
-
-namespace "socketio:0.8.6" do
-  desc "start socket-io test"
-  task 'start' do
-    system "cd socket.io-0.8.6; #{COFFEE} index.coffee"
-  end
-end
-
-namespace "socketio:0.8.7" do
-  desc "start socket-io test"
-  task 'start' do
-    system "cd socket.io-0.8.7; #{COFFEE} index.coffee"
-  end
-end
-
-namespace :fayenode do
-  desc "build faye node test"
-  task :build do
+ desc "build faye node test"
+  task :fayenode do
     system "cd faye-node; npm install faye"
   end
 
-  desc "start faye node test"
-  task :start do
-    system "cd faye-node; #{COFFEE} index.coffee"
-  end
-end
-
-namespace :fayeruby do
   desc "build faye ruby test"
-  task :build do
+  task :fayeruby do
     system "gem install thin faye"
-  end
-
-  desc "start faye ruby test"
-  task :start do
-    system "cd faye-ruby; rackup config.ru -s thin -E production"
   end
 end
 
 namespace :all do
-  NSPACES = ["fayenode", "fayeruby", "socketio:0.8.6", "socketio:0.8.7"].
+  NSPACES = {
+    "faye-node"       => "#{COFFEE} index.coffee",
+    "faye-ruby"       => "rackup config.ru -s thin -E production",
+    "socket.io-0.8.6" => "#{COFFEE} index.coffee",
+    "socket.io-0.8.7" => "#{COFFEE} index.coffee"
+  }
 
   desc "build all tests"
   task :build => ["socketio:build", "fayenode:build", "fayeruby:build"] do
     system "npm install coffee-script"
   end
 
-  desc "start all" 
+  desc "start all"
   task :start do
-    NSPACES.each do |name|
-      %x[
-        nohup rake #{name}:start > log/#{name}.log;
-        echo $! > tmp/pids/#{name}
-      ]
+    cmds = NSPACES.map do |name, cmd|
+      "cd #{name}; nohup (#{cmd} &> ../log/#{name}.log & echo $! > ../tmp/pids/#{name}); cd .."
     end
+    puts cmds.join("; ")
   end
 
   desc "stop all"
   task :stop do
-    NSPACES.each do |name|
-      %x[
-        kill `cat tmp/pids/#{name}` 
-      ]
+    cmds = NSPACES.keys.map do |name|
+      "kill `cat tmp/pids/#{name}`; rm tmp/pids/#{name}`"
     end
+
+    puts cmds.join("; ")
   end
 end
+
