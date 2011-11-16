@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Socket.IO</title>
+  <title>Socket.IO {{VER}}</title>
 </head>
 <body>
 <pre id="stdout"></pre>
 <p><input type="text" id="send"/></p>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-<script src="http://echo-staging.crunchconnect.com:8082/socket.io/socket.io.js"></script>
+<script src="http://{{HOST}}:{{PORT}}/socket.io/socket.io.js"></script>
 
 <script type='text/javascript'>
    $(function(){
@@ -45,7 +45,7 @@
      });
 
 
-     window.socket = new io.connect('echo-staging.crunchconnect.com', {port: 8082});
+     window.socket = new io.connect("{{HOST}}", {port: {{PORT}}});
      socket.on('connect', connected);
      socket.on('message', gets);
 
@@ -56,3 +56,4 @@
 </script>
 </body>
 </html>
+

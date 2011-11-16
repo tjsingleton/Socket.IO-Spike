@@ -7,45 +7,19 @@ namespace :build do
     system "cd socket.io-0.8.7; npm install socket.io@0.8.7"
   end
 
- desc "build faye node test"
+  desc "build faye node test"
   task :fayenode do
-    system "cd faye-node; npm install faye"
+    system "npm install faye"
   end
 
   desc "build faye ruby test"
   task :fayeruby do
-    system "gem install thin faye"
+    system "gem install bundler; bundle install"
   end
-end
 
-namespace :all do
-  NSPACES = {
-    "faye-node"       => "#{COFFEE} index.coffee",
-    "faye-ruby"       => "rackup config.ru -s thin -E production",
-    "socket.io-0.8.6" => "#{COFFEE} index.coffee",
-    "socket.io-0.8.7" => "#{COFFEE} index.coffee"
-  }
-
-  desc "build all tests"
-  task :build => ["socketio:build", "fayenode:build", "fayeruby:build"] do
+  desc "build all"
+  task all: [:socketio, :fayenode, :fayeruby] do
     system "npm install coffee-script"
-  end
-
-  desc "start all"
-  task :start do
-    cmds = NSPACES.map do |name, cmd|
-      "cd #{name}; nohup (#{cmd} &> ../log/#{name}.log & echo $! > ../tmp/pids/#{name}); cd .."
-    end
-    puts cmds.join("; ")
-  end
-
-  desc "stop all"
-  task :stop do
-    cmds = NSPACES.keys.map do |name|
-      "kill `cat tmp/pids/#{name}`; rm tmp/pids/#{name}`"
-    end
-
-    puts cmds.join("; ")
   end
 end
 

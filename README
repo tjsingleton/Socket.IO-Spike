@@ -1,0 +1,5 @@
+# Build all
+rake build:all
+
+# Start all
+HOSTNAME="www.example.com" foreman start

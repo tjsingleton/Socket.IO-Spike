@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Faye Node</title>
+  <title>Faye {{VER}}</title>
 </head>
 <body>
 <pre id="stdout"></pre>
 <p><input type="text" id="send"/></p>
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-<script src="http://echo-staging.crunchconnect.com:8083/faye.js"></script>
+<script src="http://{{HOST}}:{{PORT}}/faye.js"></script>
 
 <script type='text/javascript'>
   $(function(){
@@ -44,7 +44,7 @@
       puts(data);
     });
 
-    window.client = new Faye.Client('http://echo-staging.crunchconnect.com:8083/faye');
+    window.client = new Faye.Client('http://{{HOST}}:{{PORT}}/faye');
 
     client.addExtension({
      incoming: function(message, callback) {
@@ -64,3 +64,4 @@
 </script>
 </body>
 </html>
+

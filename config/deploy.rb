@@ -14,3 +14,11 @@ role :app, "echo-staging.crunchconnect.com"
 set :deploy_to, "/home/#{user}/socket-test"
 set :deploy_via, :copy
 set :branch, "master"
+
+namespace :deploy do
+  task :setup_env do 
+    run %Q{echo "HOSTNAME=echo-staging.crunchconnect.com" > #{deploy_to}/current/.env}
+  end
+end
+
+after "deploy", "deploy:setup_env"

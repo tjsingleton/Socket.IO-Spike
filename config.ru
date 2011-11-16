@@ -37,6 +37,8 @@ use Faye::RackAdapter, :mount => '/faye',
                            ConnectionLogger.new
                        ]
 
-body = File.read('index.html')
+host = ENV["HOSTNAME"] || `hostname`
+port = ENV["PORT"]
+body = File.read('./shared/faye.html').gsub("{{VER}}", "Ruby").gsub("{{HOST}}", host).gsub("{{PORT}}", port)
 
 run ->(env) { [200, {'Content-Type' => 'text/html'}, [body]] }
